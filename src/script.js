@@ -15,6 +15,24 @@
 		'circle': on_paint_circle
 	};
 
+	var activeColour = "blue";
+	var PAINT_COLOURS = {
+		"red": "#FF0000",
+		"blue": "#0000FF",
+		"black": '#000000'
+	};
+
+	//get paint tool
+	document.getElementById("rectangle").addEventListener('click', function(e){
+		activeElem = 'rectangle';
+	});
+	document.getElementById("line").addEventListener('click', function(e){
+		activeElem = 'line';
+	});
+	document.getElementById("circle").addEventListener('click', function(e){
+		activeElem = 'circle';
+	});
+
 	function get_paint_fn(){
 		var fn = PAINT_FUNCTIONS[activeElem];
 		return fn;
@@ -27,17 +45,30 @@
 			console.log(name + " is not defined");
 		}
 	}
-	//get paint tool
-	document.getElementById("rectangle").addEventListener('click', function(e){
-		activeElem = 'rectangle';
-	});
-	document.getElementById("line").addEventListener('click', function(e){
-		activeElem = 'line';
-	});
-	document.getElementById("circle").addEventListener('click', function(e){
-		activeElem = 'circle';
-	});
 	
+	//get paint colour
+	document.getElementById("red").addEventListener('click', function(e){
+		activeColour = 'red';
+	});
+	document.getElementById("blue").addEventListener('click', function(e){
+		activeColour = 'blue';
+	});
+	document.getElementById("black").addEventListener('click', function(e){
+		activeColour = 'black';
+	});
+
+	function get_colour_hex(){
+		var hex = PAINT_COLOURS[activeColour];
+		return hex;
+	}
+
+	function set_paint_colour(colour){
+		if(PAINT_COLOURS[colour]){
+			activeColour = colour;
+		}else{
+			console.log(colour + " is not defined");
+		}
+	}
 	
 	// Creating a tmp canvas
 	var tmp_canvas = document.createElement('canvas');
@@ -60,11 +91,15 @@
 	
 	
 	/* Drawing on Paint App */
-	tmp_ctx.lineWidth = 5;
-	tmp_ctx.lineJoin = 'round';
-	tmp_ctx.lineCap = 'round';
-	tmp_ctx.strokeStyle = 'blue';
-	tmp_ctx.fillStyle = 'blue';
+	function set_colour_on(context){
+		context.lineWidth = 5;
+		context.lineJoin = 'round';
+		context.lineCap = 'round';
+		context.strokeStyle = get_colour_hex();
+		context.fillStyle = get_colour_hex();
+
+		return context;
+	}
 	
 	tmp_canvas.addEventListener('mousedown', function(e) {
 		tmp_canvas.addEventListener('mousemove', get_paint_fn(), false);
@@ -83,12 +118,15 @@
 		
 		// Writing down to real canvas now
 		ctx.drawImage(tmp_canvas, 0, 0);
+
+		set_colour_on(tmp_ctx);
 		// Clearing tmp canvas
 		tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 		
 	}, false);
 	
 	function on_paint_line() {
+		set_colour_on(tmp_ctx);
 		
 		// Tmp canvas is always cleared up before drawing.
 		tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
@@ -102,6 +140,7 @@
 	}
 
 	function on_paint_rectangle() {
+		set_colour_on(tmp_ctx);
 		
 		// Tmp canvas is always cleared up before drawing.
 		tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
@@ -115,6 +154,7 @@
 	}
 
 	function on_paint_circle() {
+		set_colour_on(tmp_ctx);
 	 
 		// Tmp canvas is always cleared up before drawing.
 		tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
