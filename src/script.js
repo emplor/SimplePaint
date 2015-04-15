@@ -8,18 +8,26 @@
 	canvas.width = parseInt(sketch_style.getPropertyValue('width'));
 	canvas.height = parseInt(sketch_style.getPropertyValue('height'));
 
+	var shapes_drawn = [];
+	var colours_used = [];
+	function undo(){
+
+	}
+
 	var activeElem = "line";
 	var PAINT_FUNCTIONS = {
 		'line': on_paint_line,
 		'rectangle': on_paint_rectangle,
-		'circle': on_paint_circle
+		'circle': on_paint_circle,
+		'free': on_paint_free
 	};
 
 	var activeColour = "blue";
 	var PAINT_COLOURS = {
 		"red": "#FF0000",
 		"blue": "#0000FF",
-		"black": '#000000'
+		"black": '#000000',
+		"white": '#FFFFFF'
 	};
 
 	//get paint tool
@@ -32,14 +40,22 @@
 	document.getElementById("circle").addEventListener('click', function(e){
 		activeElem = 'circle';
 	});
+	document.getElementById("free").addEventListener('click', function(e){
+		activeElem = 'free';
+	});
+
+	document.getElementById("erase").addEventListener('click', function(e){
+		activeElem = 'free';
+	});
 
 	function get_paint_fn(){
 		var fn = PAINT_FUNCTIONS[activeElem];
 		return fn;
-	}
+	} 
 
 	function set_paint_tool(name){
 		if(PAINT_FUNCTIONS[name]){
+			shapes_drawn.push( activeElem );
 			activeElem = name;
 		}else{
 			console.log(name + " is not defined");
@@ -56,6 +72,9 @@
 	document.getElementById("black").addEventListener('click', function(e){
 		activeColour = 'black';
 	});
+	document.getElementById("erase").addEventListener('click', function(e){
+		activeColour = 'white';
+	});
 
 	function get_colour_hex(){
 		var hex = PAINT_COLOURS[activeColour];
@@ -64,6 +83,7 @@
 
 	function set_paint_colour(colour){
 		if(PAINT_COLOURS[colour]){
+			colours_used.push( activeColour );
 			activeColour = colour;
 		}else{
 			console.log(colour + " is not defined");
@@ -81,12 +101,21 @@
 
 	var mouse = {x: 0, y: 0};
 	var start_mouse = {x: 0, y: 0};
+
+	var new_mouse = {x: 0, y: 0};
+	var last_mouse = {x: 0, y:0};
 	
 	
 	/* Mouse Capturing Work */
 	tmp_canvas.addEventListener('mousemove', function(e) {
 		mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
 		mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+
+		last_mouse.x = new_mouse.x;
+		last_mouse.y = new_mouse.y;
+		
+		new_mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
+		new_mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
 	}, false);
 	
 	
@@ -173,6 +202,16 @@
 		tmp_ctx.stroke();
 		tmp_ctx.closePath();
 
-	};
+	}
+
+	function on_paint_free(){
+		set_colour_on(ctx);
+
+		ctx.beginPath();
+		ctx.moveTo(last_mouse.x, last_mouse.y);
+		ctx.lineTo(new_mouse.x, new_mouse.y);
+		ctx.closePath();
+		ctx.stroke();
+	}
 	
 }());
